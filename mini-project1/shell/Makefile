@@ -3,8 +3,8 @@ CFLAGS=-std=c99 -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -Wall -Wextra -Wer
 
 all: shell.out
 
-shell.out: src/main.c
-	$(CC) $(CFLAGS) src/main.c -o shell.out
+shell.out: src/main.c src/prompt.c
+	$(CC) $(CFLAGS) src/main.c src/prompt.c -o shell.out
 
 clean:
 	rm -f shell.out
