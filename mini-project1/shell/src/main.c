@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include "prompt.h"
+#include "ast.h"
+#include "parser.h"
 
 int main() {
     char home_dir[1024];
@@ -25,8 +27,17 @@ int main() {
             break;
         }
 
-        // Just echo for now, later we will parse
-        // printf("Received: %s", line);
+        // Parse the input
+        ShellCmd *cmd = parse_command_line(line);
+        if (!cmd) {
+            // Just continue if empty or invalid syntax
+            continue;
+        }
+
+        // TODO: Execute the command
+
+        free_shell_cmd(cmd);
+        free(cmd);
     }
 
     free(line);
