@@ -5,6 +5,7 @@
 #include "prompt.h"
 #include "ast.h"
 #include "parser.h"
+#include "exec.h"
 
 int main() {
     char home_dir[1024];
@@ -30,11 +31,10 @@ int main() {
         // Parse the input
         ShellCmd *cmd = parse_command_line(line);
         if (!cmd) {
-            // Just continue if empty or invalid syntax
             continue;
         }
 
-        // TODO: Execute the command
+        execute_command(cmd);
 
         free_shell_cmd(cmd);
         free(cmd);
