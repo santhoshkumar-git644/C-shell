@@ -6,10 +6,23 @@
 #include "ast.h"
 #include "parser.h"
 #include "exec.h"
+#include "builtin.h"
+
+char shell_home_dir[1024];
+char prev_dir[1024] = "";
+
+void execute_line(const char *line) {
+    ShellCmd *cmd = parse_command_line(line);
+    if (!cmd) {
+        return;
+    }
+    execute_command(cmd);
+    free_shell_cmd(cmd);
+    free(cmd);
+}
 
 int main() {
-    char home_dir[1024];
-    if (getcwd(home_dir, sizeof(home_dir)) == NULL) {
+    if (getcwd(shell_home_dir, sizeof(shell_home_dir)) == NULL) {
         perror("getcwd");
         return 1;
     }
@@ -19,25 +32,25 @@ int main() {
     ssize_t nread;
 
     while (1) {
-        display_prompt(home_dir);
+        display_prompt(shell_home_dir);
         
         nread = getline(&line, &len, stdin);
         if (nread == -1) {
             // EOF (Ctrl-D)
-            printf("\n");
+            printf("\nlogout\n");
             break;
         }
 
-        // Parse the input
-        ShellCmd *cmd = parse_command_line(line);
-        if (!cmd) {
-            continue;
+        // strip newline for log
+        if (nread > 0 && line[nread-1] == '\n') {
+            line[nread-1] = '\0';
+        }
+        
+        if (strlen(line) > 0) {
+            add_to_log(line);
         }
 
-        execute_command(cmd);
-
-        free_shell_cmd(cmd);
-        free(cmd);
+        execute_line(line);
     }
 
     free(line);
