@@ -9,7 +9,7 @@ extern char shell_home_dir[1024];
 
 // Read history into array. Returns count.
 int read_history(char history[HISTORY_MAX][1024]) {
-    char path[1024];
+    char path[4096];
     snprintf(path, sizeof(path), "%s/.shell_history", shell_home_dir);
     FILE *f = fopen(path, "r");
     if (!f) return 0;
@@ -29,7 +29,7 @@ int read_history(char history[HISTORY_MAX][1024]) {
 
 // Write history back
 void write_history(char history[HISTORY_MAX][1024], int count) {
-    char path[1024];
+    char path[4096];
     snprintf(path, sizeof(path), "%s/.shell_history", shell_home_dir);
     FILE *f = fopen(path, "w");
     if (!f) return;
@@ -79,7 +79,7 @@ void builtin_log(char **args, int arg_count, void (*execute_cb)(const char*)) {
             printf("%s\n", history[i]);
         }
     } else if (strcmp(args[0], "purge") == 0) {
-        char path[1024];
+        char path[4096];
         snprintf(path, sizeof(path), "%s/.shell_history", shell_home_dir);
         remove(path);
     } else if (strcmp(args[0], "execute") == 0 && arg_count == 2) {
