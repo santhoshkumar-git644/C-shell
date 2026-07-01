@@ -1,5 +1,7 @@
 #include "exec.h"
 #include "builtin.h"
+#include "pipe.h"
+#include "redir.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -8,6 +10,28 @@
 
 extern void execute_line(const char *line);
 
+void execute_single_atomic(AtomicCmd *atomic) {
+    if (!atomic || atomic->arg_count == 0) exit(0);
+
+    char *command = atomic->args[0];
+
+    if (strcmp(command, "hop") == 0) {
+        builtin_hop(&atomic->args[1], atomic->arg_count - 1);
+        exit(0);
+    } else if (strcmp(command, "reveal") == 0) {
+        builtin_reveal(&atomic->args[1], atomic->arg_count - 1);
+        exit(0);
+    } else if (strcmp(command, "log") == 0) {
+        builtin_log(&atomic->args[1], atomic->arg_count - 1, execute_line);
+        exit(0);
+    }
+
+    if (execvp(atomic->args[0], atomic->args) == -1) {
+        printf("Command not found!\n");
+        exit(1);
+    }
+}
+
 void execute_command(ShellCmd *cmd) {
     if (!cmd || cmd->group_count == 0) return;
 
@@ -15,38 +39,21 @@ void execute_command(ShellCmd *cmd) {
         CmdGroup *group = &cmd->groups[i];
         if (group->cmd_count == 0) continue;
 
-        AtomicCmd *atomic = &group->commands[0]; // Just execute first for now
-        if (atomic->arg_count == 0) continue;
-
-        char *command = atomic->args[0];
-
-        if (strcmp(command, "hop") == 0) {
-            builtin_hop(&atomic->args[1], atomic->arg_count - 1);
-            continue;
-        } else if (strcmp(command, "reveal") == 0) {
-            builtin_reveal(&atomic->args[1], atomic->arg_count - 1);
-            continue;
-        } else if (strcmp(command, "log") == 0) {
-            builtin_log(&atomic->args[1], atomic->arg_count - 1, execute_line);
-            continue;
-        }
-
-        pid_t pid = fork();
-        if (pid < 0) {
-            perror("fork");
-            continue;
-        }
-
-        if (pid == 0) {
-            // Child process
-            if (execvp(atomic->args[0], atomic->args) == -1) {
-                printf("Command not found!\n");
-                exit(1);
+        // If it's a single built-in and not piped, execute in parent to affect shell state
+        if (group->cmd_count == 1) {
+            AtomicCmd *atomic = &group->commands[0];
+            if (atomic->arg_count > 0) {
+                char *c = atomic->args[0];
+                if (strcmp(c, "hop") == 0) {
+                    builtin_hop(&atomic->args[1], atomic->arg_count - 1);
+                    continue;
+                } else if (strcmp(c, "log") == 0) {
+                    builtin_log(&atomic->args[1], atomic->arg_count - 1, execute_line);
+                    continue;
+                }
             }
-        } else {
-            // Parent process
-            int status;
-            waitpid(pid, &status, 0);
         }
+
+        execute_pipeline(group);
     }
 }
