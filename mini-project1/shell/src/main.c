@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "exec.h"
 #include "builtin.h"
+#include "signals.h"
 
 char shell_home_dir[1024];
 char prev_dir[1024] = "";
@@ -22,6 +23,8 @@ void execute_line(const char *line) {
 }
 
 int main() {
+    setup_signal_handlers();
+
     if (getcwd(shell_home_dir, sizeof(shell_home_dir)) == NULL) {
         perror("getcwd");
         return 1;

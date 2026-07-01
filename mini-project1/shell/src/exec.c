@@ -2,6 +2,7 @@
 #include "builtin.h"
 #include "pipe.h"
 #include "redir.h"
+#include "jobs.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -23,6 +24,18 @@ void execute_single_atomic(AtomicCmd *atomic) {
         exit(0);
     } else if (strcmp(command, "log") == 0) {
         builtin_log(&atomic->args[1], atomic->arg_count - 1, execute_line);
+        exit(0);
+    } else if (strcmp(command, "activities") == 0) {
+        builtin_activities(&atomic->args[1], atomic->arg_count - 1);
+        exit(0);
+    } else if (strcmp(command, "ping") == 0) {
+        builtin_ping(&atomic->args[1], atomic->arg_count - 1);
+        exit(0);
+    } else if (strcmp(command, "fg") == 0) {
+        builtin_fg(&atomic->args[1], atomic->arg_count - 1);
+        exit(0);
+    } else if (strcmp(command, "bg") == 0) {
+        builtin_bg(&atomic->args[1], atomic->arg_count - 1);
         exit(0);
     }
 
@@ -49,6 +62,18 @@ void execute_command(ShellCmd *cmd) {
                     continue;
                 } else if (strcmp(c, "log") == 0) {
                     builtin_log(&atomic->args[1], atomic->arg_count - 1, execute_line);
+                    continue;
+                } else if (strcmp(c, "activities") == 0) {
+                    builtin_activities(&atomic->args[1], atomic->arg_count - 1);
+                    continue;
+                } else if (strcmp(c, "ping") == 0) {
+                    builtin_ping(&atomic->args[1], atomic->arg_count - 1);
+                    continue;
+                } else if (strcmp(c, "fg") == 0) {
+                    builtin_fg(&atomic->args[1], atomic->arg_count - 1);
+                    continue;
+                } else if (strcmp(c, "bg") == 0) {
+                    builtin_bg(&atomic->args[1], atomic->arg_count - 1);
                     continue;
                 }
             }
