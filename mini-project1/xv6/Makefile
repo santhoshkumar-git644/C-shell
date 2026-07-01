@@ -1,1 +1,2 @@
 all: qemu
+SCHEDULER?=RR
