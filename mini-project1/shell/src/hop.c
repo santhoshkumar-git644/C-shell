@@ -10,10 +10,11 @@ void builtin_hop(char **args, int arg_count) {
     if (arg_count == 0) {
         char cwd[1024];
         if (getcwd(cwd, sizeof(cwd)) != NULL) {
-            strncpy(prev_dir, cwd, sizeof(prev_dir));
-        }
-        if (chdir(shell_home_dir) != 0) {
-            printf("No such directory!\n");
+            if (chdir(shell_home_dir) == 0) {
+                strncpy(prev_dir, cwd, sizeof(prev_dir));
+            } else {
+                printf("No such directory!\n");
+            }
         }
         return;
     }
@@ -31,7 +32,6 @@ void builtin_hop(char **args, int arg_count) {
             strncpy(target_dir, "..", sizeof(target_dir));
         } else if (strcmp(arg, "-") == 0) {
             if (strlen(prev_dir) == 0) {
-                // Do nothing if no previous dir
                 continue; 
             }
             strncpy(target_dir, prev_dir, sizeof(target_dir));
@@ -40,13 +40,11 @@ void builtin_hop(char **args, int arg_count) {
         }
 
         if (getcwd(cwd, sizeof(cwd)) != NULL) {
-            strncpy(prev_dir, cwd, sizeof(prev_dir));
-        }
-
-        if (chdir(target_dir) != 0) {
-            printf("No such directory!\n");
-            // If chdir fails, we should restore prev_dir to what it actually was?
-            // "If the directory does not exist, output "No such directory!""
+            if (chdir(target_dir) == 0) {
+                strncpy(prev_dir, cwd, sizeof(prev_dir));
+            } else {
+                printf("No such directory!\n");
+            }
         }
     }
 }

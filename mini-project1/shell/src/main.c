@@ -8,6 +8,7 @@
 #include "exec.h"
 #include "builtin.h"
 #include "signals.h"
+#include "jobs.h"
 
 char shell_home_dir[1024];
 char prev_dir[1024] = "";
@@ -35,6 +36,7 @@ int main() {
     ssize_t nread;
 
     while (1) {
+        check_background_jobs();
         display_prompt(shell_home_dir);
         
         nread = getline(&line, &len, stdin);

@@ -13,9 +13,13 @@ typedef struct {
     int job_id;
 } Job;
 
+extern Job job_list[MAX_JOBS];
+extern int num_jobs;
+
 // Job list management
 void add_job(pid_t pid, const char *command);
 void remove_job(pid_t pid);
+void check_background_jobs();
 void print_activities();
 void ping_job(int job_id, int signal);
 

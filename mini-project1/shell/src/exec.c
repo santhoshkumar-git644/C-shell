@@ -51,6 +51,8 @@ void execute_command(ShellCmd *cmd) {
     for (int i = 0; i < cmd->group_count; i++) {
         CmdGroup *group = &cmd->groups[i];
         if (group->cmd_count == 0) continue;
+        
+        bool run_bg = cmd->run_bg[i];
 
         // If it's a single built-in and not piped, execute in parent to affect shell state
         if (group->cmd_count == 1) {
@@ -79,6 +81,6 @@ void execute_command(ShellCmd *cmd) {
             }
         }
 
-        execute_pipeline(group);
+        execute_pipeline(group, run_bg);
     }
 }
